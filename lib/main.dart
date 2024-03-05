@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:syncfusion_flutter_pdf/pdf.dart';
 
 //Local imports
-import 'save_file_mobile.dart' if (dart.library.html) 'save_file_web.dart';
+import 'save_file_mobile.dart';
 
 void main() {
   runApp(const CreatePdfWidget());
@@ -64,10 +64,6 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
     final PdfPage page = document.pages.add();
     //Get page client size
     final Size pageSize = page.getClientSize();
-    //Draw rectangle
-    page.graphics.drawRectangle(
-        bounds: Rect.fromLTWH(0, 0, pageSize.width, pageSize.height),
-        pen: PdfPen(PdfColor(142, 170, 219)));
     //Generate PDF grid.
     final PdfGrid grid = getGrid();
     //Draw the header section by creating text element
@@ -84,43 +80,35 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
     await saveAndLaunchFile(bytes, 'Invoice.pdf');
   }
 
+// 515 -385 = 
   //Draws the invoice header
   PdfLayoutResult drawHeader(PdfPage page, Size pageSize, PdfGrid grid) {
     //Draw rectangle
     page.graphics.drawRectangle(
-        brush: PdfSolidBrush(PdfColor(91, 126, 215)),
-        bounds: Rect.fromLTWH(0, 0, pageSize.width - 115, 90));
+        brush: PdfSolidBrush(PdfColor(17, 114, 133)), bounds: Rect.fromLTWH(0, 0, pageSize.width - 130, 90));
     //Draw string
-    page.graphics.drawString(
-        'INVOICE', PdfStandardFont(PdfFontFamily.helvetica, 30),
+    page.graphics.drawString('Purchase Summary', PdfStandardFont(PdfFontFamily.helvetica, 30),
         brush: PdfBrushes.white,
         bounds: Rect.fromLTWH(25, 0, pageSize.width - 115, 90),
         format: PdfStringFormat(lineAlignment: PdfVerticalAlignment.middle));
 
     page.graphics.drawRectangle(
-        bounds: Rect.fromLTWH(400, 0, pageSize.width - 400, 90),
-        brush: PdfSolidBrush(PdfColor(65, 104, 205)));
+        bounds: Rect.fromLTWH(385, 0, pageSize.width - 385, 90), brush: PdfSolidBrush(PdfColor(17, 114, 133)));
 
-    page.graphics.drawString(r'$' + getTotalAmount(grid).toString(),
-        PdfStandardFont(PdfFontFamily.helvetica, 18),
-        bounds: Rect.fromLTWH(400, 0, pageSize.width - 400, 100),
-        brush: PdfBrushes.white,
-        format: PdfStringFormat(
-            alignment: PdfTextAlignment.center,
-            lineAlignment: PdfVerticalAlignment.middle));
+    page.graphics.drawString(r'$' + getTotalAmount(grid).toString(), PdfStandardFont(PdfFontFamily.helvetica, 18),
+        bounds: Rect.fromLTWH(385, 0, pageSize.width - 385, 100),
+        brush: PdfBrushes.black,
+        format: PdfStringFormat(alignment: PdfTextAlignment.center, lineAlignment: PdfVerticalAlignment.middle));
 
     final PdfFont contentFont = PdfStandardFont(PdfFontFamily.helvetica, 9);
     //Draw string
     page.graphics.drawString('Amount', contentFont,
         brush: PdfBrushes.white,
         bounds: Rect.fromLTWH(400, 0, pageSize.width - 400, 33),
-        format: PdfStringFormat(
-            alignment: PdfTextAlignment.center,
-            lineAlignment: PdfVerticalAlignment.bottom));
+        format: PdfStringFormat(alignment: PdfTextAlignment.center, lineAlignment: PdfVerticalAlignment.bottom));
     //Create data foramt and convert it to text.
     final DateFormat format = DateFormat.yMMMMd('en_US');
-    final String invoiceNumber =
-        'Invoice Number: 2058557939\r\n\r\nDate: ${format.format(DateTime.now())}';
+    final String invoiceNumber = 'Invoice Number: 2058557939\r\n\r\nDate: ${format.format(DateTime.now())}';
     final Size contentSize = contentFont.measureString(invoiceNumber);
     // ignore: leading_newlines_in_multiline_strings
     const String address = '''Bill To: \r\n\r\nAbraham Swearegin, 
@@ -129,13 +117,11 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
 
     PdfTextElement(text: invoiceNumber, font: contentFont).draw(
         page: page,
-        bounds: Rect.fromLTWH(pageSize.width - (contentSize.width + 30), 120,
-            contentSize.width + 30, pageSize.height - 120));
+        bounds: Rect.fromLTWH(
+            pageSize.width - (contentSize.width + 30), 120, contentSize.width + 30, pageSize.height - 120));
 
     return PdfTextElement(text: address, font: contentFont).draw(
-        page: page,
-        bounds: Rect.fromLTWH(30, 120,
-            pageSize.width - (contentSize.width + 30), pageSize.height - 120))!;
+        page: page, bounds: Rect.fromLTWH(30, 120, pageSize.width - (contentSize.width + 30), pageSize.height - 120))!;
   }
 
   //Draws the grid
@@ -152,34 +138,24 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
       }
     };
     //Draw the PDF grid and get the result.
-    result = grid.draw(
-        page: page, bounds: Rect.fromLTWH(0, result.bounds.bottom + 40, 0, 0))!;
+    result = grid.draw(page: page, bounds: Rect.fromLTWH(0, result.bounds.bottom + 40, 0, 0))!;
 
     //Draw grand total.
-    page.graphics.drawString('Grand Total',
-        PdfStandardFont(PdfFontFamily.helvetica, 9, style: PdfFontStyle.bold),
-        bounds: Rect.fromLTWH(
-            quantityCellBounds!.left,
-            result.bounds.bottom + 10,
-            quantityCellBounds!.width,
+    page.graphics.drawString('Grand Total', PdfStandardFont(PdfFontFamily.helvetica, 9, style: PdfFontStyle.bold),
+        bounds: Rect.fromLTWH(quantityCellBounds!.left, result.bounds.bottom + 10, quantityCellBounds!.width,
             quantityCellBounds!.height));
-    page.graphics.drawString(getTotalAmount(grid).toString(),
-        PdfStandardFont(PdfFontFamily.helvetica, 9, style: PdfFontStyle.bold),
-        bounds: Rect.fromLTWH(
-            totalPriceCellBounds!.left,
-            result.bounds.bottom + 10,
-            totalPriceCellBounds!.width,
+    page.graphics.drawString(
+        getTotalAmount(grid).toString(), PdfStandardFont(PdfFontFamily.helvetica, 9, style: PdfFontStyle.bold),
+        bounds: Rect.fromLTWH(totalPriceCellBounds!.left, result.bounds.bottom + 10, totalPriceCellBounds!.width,
             totalPriceCellBounds!.height));
   }
 
   //Draw the invoice footer data.
   void drawFooter(PdfPage page, Size pageSize) {
-    final PdfPen linePen =
-        PdfPen(PdfColor(142, 170, 219), dashStyle: PdfDashStyle.custom);
+    final PdfPen linePen = PdfPen(PdfColor(142, 170, 219), dashStyle: PdfDashStyle.custom);
     linePen.dashPattern = <double>[3, 3];
     //Draw line
-    page.graphics.drawLine(linePen, Offset(0, pageSize.height - 100),
-        Offset(pageSize.width, pageSize.height - 100));
+    page.graphics.drawLine(linePen, Offset(0, pageSize.height - 100), Offset(pageSize.width, pageSize.height - 100));
 
     const String footerContent =
         // ignore: leading_newlines_in_multiline_strings
@@ -187,8 +163,7 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
          TX 78721\r\n\r\nAny Questions? support@adventure-works.com''';
 
     //Added 30 as a margin for the layout
-    page.graphics.drawString(
-        footerContent, PdfStandardFont(PdfFontFamily.helvetica, 9),
+    page.graphics.drawString(footerContent, PdfStandardFont(PdfFontFamily.helvetica, 9),
         format: PdfStringFormat(alignment: PdfTextAlignment.right),
         bounds: Rect.fromLTWH(pageSize.width - 30, pageSize.height - 70, 0, 0));
   }
@@ -222,8 +197,7 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
     //Set gird columns width
     grid.columns[1].width = 200;
     for (int i = 0; i < headerRow.cells.count; i++) {
-      headerRow.cells[i].style.cellPadding =
-          PdfPaddings(bottom: 5, left: 5, right: 5, top: 5);
+      headerRow.cells[i].style.cellPadding = PdfPaddings(bottom: 5, left: 5, right: 5, top: 5);
     }
     for (int i = 0; i < grid.rows.count; i++) {
       final PdfGridRow row = grid.rows[i];
@@ -232,16 +206,14 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
         if (j == 0) {
           cell.stringFormat.alignment = PdfTextAlignment.center;
         }
-        cell.style.cellPadding =
-            PdfPaddings(bottom: 5, left: 5, right: 5, top: 5);
+        cell.style.cellPadding = PdfPaddings(bottom: 5, left: 5, right: 5, top: 5);
       }
     }
     return grid;
   }
 
   //Create and row for the grid.
-  void addProducts(String productId, String productName, double price,
-      int quantity, double total, PdfGrid grid) {
+  void addProducts(String productId, String productName, double price, int quantity, double total, PdfGrid grid) {
     final PdfGridRow row = grid.rows.add();
     row.cells[0].value = productId;
     row.cells[1].value = productName;
@@ -254,8 +226,7 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
   double getTotalAmount(PdfGrid grid) {
     double total = 0;
     for (int i = 0; i < grid.rows.count; i++) {
-      final String value =
-          grid.rows[i].cells[grid.columns.count - 1].value as String;
+      final String value = grid.rows[i].cells[grid.columns.count - 1].value as String;
       total += double.parse(value);
     }
     return total;
