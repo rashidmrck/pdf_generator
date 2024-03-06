@@ -68,6 +68,14 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
     final PdfGrid grid = getGrid();
     //Draw the header section by creating text element
     final PdfLayoutResult result = drawHeader(page, pageSize, grid);
+    PdfTextWebLink(
+            url: 'www.google.co.in',
+            text: 'google',
+            font: PdfStandardFont(PdfFontFamily.timesRoman, 14),
+            brush: PdfSolidBrush(PdfColor(0, 0, 0)),
+            pen: PdfPens.brown,
+            format: PdfStringFormat(alignment: PdfTextAlignment.center, lineAlignment: PdfVerticalAlignment.middle))
+        .draw(page, const Offset(50, 40));
     //Draw grid
     drawGrid(page, grid, result);
     //Add invoice footer
@@ -80,7 +88,7 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
     await saveAndLaunchFile(bytes, 'Invoice.pdf');
   }
 
-// 515 -385 = 
+// 515 -385 =
   //Draws the invoice header
   PdfLayoutResult drawHeader(PdfPage page, Size pageSize, PdfGrid grid) {
     //Draw rectangle
@@ -215,6 +223,7 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
   //Create and row for the grid.
   void addProducts(String productId, String productName, double price, int quantity, double total, PdfGrid grid) {
     final PdfGridRow row = grid.rows.add();
+    
     row.cells[0].value = productId;
     row.cells[1].value = productName;
     row.cells[2].value = price.toString();
@@ -231,4 +240,5 @@ class _CreatePdfState extends State<CreatePdfStatefulWidget> {
     }
     return total;
   }
+  
 }
